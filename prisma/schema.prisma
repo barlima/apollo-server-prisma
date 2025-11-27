@@ -12,3 +12,61 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+model Property {
+  id          String       @id @default(uuid())
+  city        String
+  street      String
+  state       String
+  zipCode     Int
+  weatherData WeatherData? // optional in case the API call fails
+  lat         Float
+  lng         Float
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([city])
+  @@index([zipCode])
+  @@index([state])
+  @@index([createdAt(sort: Desc)], name: "property_created_at_desc_idx")
+  @@index([createdAt(sort: Asc)], name: "property_created_at_asc_idx")
+}
+
+// This model would require some business decisions on what we should store in the database
+// for this example I will just copy the data from the response
+model WeatherData {
+  id                     String    @id @default(uuid())
+  property               Property? @relation(fields: [propertyId], references: [id])
+  propertyId             String    @unique
+  observationTime        String
+  temperature            Int
+  weatherCode            Int
+  weatherIcons           String[]
+  weatherDescriptions    String[]
+  astroSunrise           String
+  astroSunset            String
+  astroMoonrise          String
+  astroMoonset           String
+  astroMoonPhase         String
+  astroMoonIllumination  Int
+  airQualityCo           Float
+  airQualityNo2          Float
+  airQualityO3           Float
+  airQualitySo2          Float
+  airQualityPm25         Float
+  airQualityPm10         Float
+  airQualityUsEpaIndex   Int
+  airQualityGbDefraIndex Int
+  windSpeed              Int
+  windDegree             Int
+  windDir                String
+  pressure               Int
+  precip                 Int
+  humidity               Int
+  cloudcover             Int
+  feelslike              Int
+  uvIndex                Int
+  visibility             Int
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+}
