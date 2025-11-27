@@ -1,20 +1,47 @@
 import { ApolloServer } from "@apollo/server";
-import { startStandaloneServer } from "@apollo/server/standalone";
+import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
+import { expressMiddleware } from "@as-integrations/express5";
+import cors from "cors";
+import express from "express";
+import { createServer } from "http";
 
 import { builder } from "./lib/builder";
-import { createContext } from "./context";
+import { createContext, type Context } from "./context";
 import { config } from "./config";
+import { prisma } from "./lib/prisma";
 import "./graphql";
 
 const schema = builder.toSchema();
 
-const server = new ApolloServer({
+const app = express();
+const httpServer = createServer(app);
+
+const server = new ApolloServer<Context>({
   schema,
+  plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
 });
 
-const { url } = await startStandaloneServer(server, {
-  context: createContext,
-  listen: { port: config.port },
+await server.start();
+
+app.use(
+  "/graphql",
+  cors(),
+  express.json(),
+  expressMiddleware(server, {
+    context: createContext,
+  })
+);
+
+httpServer.listen(config.port, () => {
+  console.log(`🚀  Server ready at: http://localhost:${config.port}/graphql`);
 });
 
-console.log(`🚀  Server ready at: ${url}`);
+const shutdown = async () => {
+  console.log("Shutting down...");
+  await server.stop();
+  await prisma.$disconnect();
+  process.exit(0);
+};
+
+process.on("SIGTERM", shutdown);
+process.on("SIGINT", shutdown);
