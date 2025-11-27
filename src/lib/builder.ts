@@ -1,0 +1,36 @@
+import SchemaBuilder from "@pothos/core";
+import PrismaPlugin from "@pothos/plugin-prisma";
+
+import type PrismaTypes from "../generated/pothos";
+import { getDatamodel } from "../generated/pothos";
+import { prisma } from "./prisma";
+
+const builder = new SchemaBuilder<{
+  PrismaTypes: PrismaTypes; // This gives the builder all the type information about your prisma schema
+  Scalars: {
+    DateTime: {
+      Input: Date;
+      Output: Date;
+    };
+  };
+}>({
+  plugins: [PrismaPlugin],
+  prisma: {
+    client: prisma,
+    // This give pothos information about your tables, relations, and indexes to help it generate optimal queries at runtime.
+    // This used to be attached to the prisma client, but has been removed in most runtimes/modes to reduce bundle size.
+    dmmf: getDatamodel(),
+    // defaults to false, uses /// comments from prisma schema as descriptions
+    // for object types, relations and exposed fields.
+    // descriptions can be omitted by setting description to false
+    exposeDescriptions: true,
+    // use where clause from prismaRelatedConnection for totalCount (defaults to true)
+    filterConnectionTotalCount: true,
+    // warn when not using a query parameter correctly
+    onUnusedQuery: process.env.NODE_ENV === "production" ? null : "warn",
+  },
+});
+
+builder.queryType({});
+
+export { builder };

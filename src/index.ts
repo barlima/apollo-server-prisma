@@ -1,15 +1,13 @@
 import { ApolloServer } from "@apollo/server";
 import { startStandaloneServer } from "@apollo/server/standalone";
 
-import { resolvers } from "./graphql";
+import { builder } from "./lib/builder";
+import "./graphql";
+
+const schema = builder.toSchema();
 
 const server = new ApolloServer({
-  typeDefs: `
-    type Query {
-      hello: String
-    }
-  `,
-  resolvers,
+  schema,
 });
 
 const { url } = await startStandaloneServer(server, {
