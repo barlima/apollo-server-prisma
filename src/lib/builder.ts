@@ -4,8 +4,11 @@ import PrismaPlugin from "@pothos/plugin-prisma";
 import type PrismaTypes from "../generated/pothos";
 import { getDatamodel } from "../generated/pothos";
 import { prisma } from "./prisma";
+import type { Context } from "../context";
+import { config } from "../config";
 
 const builder = new SchemaBuilder<{
+  Context: Context;
   PrismaTypes: PrismaTypes; // This gives the builder all the type information about your prisma schema
   Scalars: {
     DateTime: {
@@ -27,7 +30,7 @@ const builder = new SchemaBuilder<{
     // use where clause from prismaRelatedConnection for totalCount (defaults to true)
     filterConnectionTotalCount: true,
     // warn when not using a query parameter correctly
-    onUnusedQuery: process.env.NODE_ENV === "production" ? null : "warn",
+    onUnusedQuery: config.isDevelopment ? "warn" : null,
   },
 });
 
