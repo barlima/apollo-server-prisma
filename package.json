@@ -8,9 +8,9 @@
   "description": "",
   "type": "module",
   "scripts": {
-    "compile": "tsc",
-    "start": "npm run compile && node ./dist/index.js",
-    "prepare": "husky",
+    "dev": "tsx src/index.ts",
+    "build": "tsc",
+    "start": "node ./dist/src/index.js",
     "commitlint": "commitlint --edit"
   },
   "dependencies": {
@@ -26,6 +26,7 @@
     "@commitlint/config-conventional": "20.0.0",
     "@types/node": "24.10.1",
     "prisma": "7.0.1",
+    "tsx": "4.20.6",
     "typescript": "5.9.3"
   }
 }
