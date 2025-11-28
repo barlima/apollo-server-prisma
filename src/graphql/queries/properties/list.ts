@@ -14,9 +14,19 @@ builder.queryField("properties", (t) => {
     type: "Property",
     cursor: "id",
     args: {
-      city: t.arg.string(),
+      city: t.arg.string({
+        validate: {
+          maxLength: 100,
+          minLength: 1,
+        },
+      }),
       state: t.arg({ type: USStateEnum }),
-      zipCode: t.arg.int(),
+      zipCode: t.arg.int({
+        validate: {
+          min: 501,
+          max: 99950,
+        },
+      }),
       orderBy: t.arg({ type: PropertyOrderBy }),
     },
     resolve: (query, _root, args, ctx) => {

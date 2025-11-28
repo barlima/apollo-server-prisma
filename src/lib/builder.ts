@@ -1,12 +1,14 @@
 import SchemaBuilder from "@pothos/core";
 import PrismaPlugin from "@pothos/plugin-prisma";
 import RelayPlugin from "@pothos/plugin-relay";
+import ZodPlugin from "@pothos/plugin-zod";
 
 import type PrismaTypes from "../generated/pothos";
 import { getDatamodel } from "../generated/pothos";
 import { prisma } from "./prisma";
 import type { Context } from "../context";
 import { config } from "../config";
+import { GraphQLError } from "graphql";
 
 const builder = new SchemaBuilder<{
   Context: Context;
@@ -18,10 +20,20 @@ const builder = new SchemaBuilder<{
     };
   };
 }>({
-  plugins: [PrismaPlugin, RelayPlugin],
+  plugins: [PrismaPlugin, RelayPlugin, ZodPlugin],
   relay: {
     clientMutationId: "omit",
     cursorType: "String",
+  },
+  zod: {
+    validationError: (zodError) => {
+      return new GraphQLError(zodError.message, {
+        extensions: {
+          code: "BAD_USER_INPUT",
+          validationErrors: zodError.message,
+        },
+      });
+    },
   },
   prisma: {
     client: prisma,

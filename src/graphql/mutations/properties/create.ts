@@ -1,33 +1,54 @@
 import { builder } from "../../../lib/builder";
 import { USStateEnum } from "../../enums/us-state";
-import { validateCreatePropertyInput } from "./create.shema";
 
 builder.mutationField("createProperty", (t) => {
   return t.prismaField({
     type: "Property",
     args: {
-      city: t.arg.string({ required: true }),
+      city: t.arg.string({
+        required: true,
+        validate: {
+          maxLength: 100,
+          minLength: 1,
+        },
+      }),
       state: t.arg({ type: USStateEnum, required: true }),
-      street: t.arg.string({ required: true }),
-      zipCode: t.arg.int({ required: true }),
-      lat: t.arg.float({ required: true }),
-      lng: t.arg.float({ required: true }),
+      street: t.arg.string({
+        required: true,
+        validate: {
+          maxLength: 200,
+          minLength: 1,
+        },
+      }),
+      zipCode: t.arg.int({
+        required: true,
+        validate: {
+          min: 501,
+          max: 99950,
+        },
+      }),
+      lat: t.arg.float({
+        required: true,
+        validate: {
+          min: -90,
+          max: 90,
+        },
+      }),
+      lng: t.arg.float({
+        required: true,
+        validate: {
+          min: -180,
+          max: 180,
+        },
+      }),
     },
     resolve: async (query, _root, args, ctx) => {
-      const validatedInput = validateCreatePropertyInput({
+      const data = {
         city: args.city,
-        street: args.street,
+        state: args.state,
         zipCode: args.zipCode,
         lat: args.lat,
         lng: args.lng,
-      });
-
-      const data = {
-        city: validatedInput.city,
-        state: args.state,
-        zipCode: validatedInput.zipCode,
-        lat: validatedInput.lat,
-        lng: validatedInput.lng,
       };
 
       let weatherData = null;
@@ -49,7 +70,7 @@ builder.mutationField("createProperty", (t) => {
         ...query,
         data: {
           ...data,
-          street: validatedInput.street,
+          street: args.street,
           weatherData: {
             create: weatherData,
           },
