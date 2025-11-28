@@ -4,7 +4,7 @@ import { mapRecordFromSnakeToCamel } from "../../utils/mapRecordFromSnakeToCamel
 import {
   WeatherstackCurrentResponse,
   weatherstackCurrentResponseSchema,
-} from "./schema";
+} from "./weatherstack.schema";
 
 type WeatherDataResponse = Omit<
   WeatherData,

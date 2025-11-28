@@ -25,7 +25,7 @@ await server.start();
 
 app.use(
   "/graphql",
-  cors(),
+  cors(), // For testing purposes only
   express.json(),
   expressMiddleware(server, {
     context: createContext,

@@ -17,6 +17,7 @@ builder.mutationField("deleteProperty", (t) => {
       } catch (error) {
         console.error(error);
         // Log the error to an external service
+        throw error;
       }
     },
   });

@@ -1,5 +1,6 @@
 import { builder } from "../../../lib/builder";
 import { USStateEnum } from "../../enums/us-state";
+import { validateCreatePropertyInput } from "./create.shema";
 
 builder.mutationField("createProperty", (t) => {
   return t.prismaField({
@@ -13,13 +14,22 @@ builder.mutationField("createProperty", (t) => {
       lng: t.arg.float({ required: true }),
     },
     resolve: async (query, _root, args, ctx) => {
-      const data = {
+      const validatedInput = validateCreatePropertyInput({
         city: args.city,
-        state: args.state,
+        street: args.street,
         zipCode: args.zipCode,
         lat: args.lat,
         lng: args.lng,
+      });
+
+      const data = {
+        city: validatedInput.city,
+        state: args.state,
+        zipCode: validatedInput.zipCode,
+        lat: validatedInput.lat,
+        lng: validatedInput.lng,
       };
+
       let weatherData = null;
 
       try {
@@ -39,7 +49,7 @@ builder.mutationField("createProperty", (t) => {
         ...query,
         data: {
           ...data,
-          street: args.street,
+          street: validatedInput.street,
           weatherData: {
             create: weatherData,
           },
