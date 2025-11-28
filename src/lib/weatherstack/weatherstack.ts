@@ -1,40 +1,60 @@
 import { config } from "../../config";
 import { Property, WeatherData } from "../../generated/prisma/client";
+import { ObjectSnakeToCamel } from "../../types/ObjectSnakeToCamel";
 import { mapRecordFromSnakeToCamel } from "../../utils/mapRecordFromSnakeToCamel";
+import { pick } from "../../utils/pick";
 import {
   WeatherstackCurrentResponse,
   weatherstackCurrentResponseSchema,
-} from "./weatherstack.schema";
+} from "./schema";
 
 type WeatherDataResponse = Omit<
   WeatherData,
   "id" | "propertyId" | "createdAt" | "updatedAt"
 >;
 
+type CurrentWeatherOptions = Partial<
+  Pick<Property, "city" | "state" | "zipCode" | "lat" | "lng">
+>;
+
 class Weatherstack {
   private readonly apiKey: string;
   private readonly baseUrl: string;
 
+  // In case of changes in the response, keep the list of fields
+  // that we want to select and validate
+  private readonly relevantKeys: (keyof WeatherstackCurrentResponse["current"])[];
+
   constructor(apiKey: string) {
     this.apiKey = apiKey;
     this.baseUrl = "https://api.weatherstack.com";
+    this.relevantKeys = [
+      "observation_time",
+      "temperature",
+      "weather_code",
+      "weather_icons",
+      "weather_descriptions",
+      "wind_speed",
+      "wind_degree",
+      "wind_dir",
+      "pressure",
+      "precip",
+      "humidity",
+      "cloudcover",
+      "feelslike",
+      "uv_index",
+      "visibility",
+      "astro",
+      "air_quality",
+    ];
   }
 
   public async getCurrentWeather(
-    options: Partial<
-      Pick<Property, "city" | "state" | "zipCode" | "lat" | "lng">
-    >
+    options: CurrentWeatherOptions
   ): Promise<WeatherDataResponse | null> {
-    const query = Object.values(options).filter(Boolean).join(",");
-
-    const params = new URLSearchParams({
-      access_key: this.apiKey,
-      query,
-    });
-
     try {
       const response = await fetch(
-        `${this.baseUrl}/current?${params.toString()}`
+        `${this.baseUrl}/current?${this.getQueryParams(options).toString()}`
       );
 
       if (!response.ok) {
@@ -45,13 +65,11 @@ class Weatherstack {
 
       const data = await response.json();
 
-      const validatedData = weatherstackCurrentResponseSchema.safeParse(data);
+      const validatedData = this.validateResponse(data);
+      const relevantData = this.pickRelevantData(validatedData);
+      const normalizedData = mapRecordFromSnakeToCamel(relevantData);
 
-      if (!validatedData.success) {
-        throw new Error(validatedData.error.message);
-      }
-
-      return this.formatWeatherData(validatedData.data.current);
+      return this.formatWeatherData(normalizedData);
     } catch (error) {
       console.error(error);
       // Log the error to an external service
@@ -60,12 +78,21 @@ class Weatherstack {
     }
   }
 
+  private getQueryParams(options: CurrentWeatherOptions) {
+    const query = Object.values(options).filter(Boolean).join(",");
+
+    const params = new URLSearchParams({
+      access_key: this.apiKey,
+      query,
+    });
+
+    return params;
+  }
+
   private formatWeatherData(
-    data: WeatherstackCurrentResponse["current"]
+    data: ObjectSnakeToCamel<WeatherstackCurrentResponse["current"]>
   ): WeatherDataResponse {
-    // isDay is not defined in the documentation
-    const { astro, airQuality, isDay, ...rest } =
-      mapRecordFromSnakeToCamel(data);
+    const { astro, airQuality, ...rest } = data;
 
     return {
       ...rest,
@@ -92,6 +119,22 @@ class Weatherstack {
     // If the value is not a number, return 0 by default
     // It might require a more sophisticated approach (more details needed)
     return parseFloat(value) || 0;
+  }
+
+  private pickRelevantData(
+    data: WeatherstackCurrentResponse
+  ): WeatherstackCurrentResponse["current"] {
+    return pick(data.current, this.relevantKeys);
+  }
+
+  private validateResponse(data: unknown): WeatherstackCurrentResponse {
+    const validatedData = weatherstackCurrentResponseSchema.safeParse(data);
+
+    if (!validatedData.success) {
+      throw new Error(validatedData.error.message);
+    }
+
+    return validatedData.data;
   }
 }
 

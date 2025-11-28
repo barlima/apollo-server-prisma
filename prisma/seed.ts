@@ -10,8 +10,8 @@ const prisma = new PrismaClient({
 
 async function main() {
   // Cleanup
-  // await prisma.weatherData.deleteMany();
-  // await prisma.property.deleteMany();
+  await prisma.weatherData.deleteMany();
+  await prisma.property.deleteMany();
 
   const properties = [
     {
