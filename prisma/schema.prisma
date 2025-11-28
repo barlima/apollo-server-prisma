@@ -96,7 +96,7 @@ model Property {
 // for this example I will just copy the data from the response
 model WeatherData {
   id                     String    @id @default(uuid())
-  property               Property? @relation(fields: [propertyId], references: [id])
+  property               Property? @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   propertyId             String    @unique
   observationTime        String
   temperature            Int
