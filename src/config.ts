@@ -5,4 +5,5 @@ export const config = {
   nodeEnv: process.env.NODE_ENV || "development",
   isDevelopment: process.env.NODE_ENV !== "production",
   databaseUrl: process.env.DATABASE_URL || "",
+  weatherstackApiKey: process.env.WEATHERSTACK_API_KEY || "",
 } as const;

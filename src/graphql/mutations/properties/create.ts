@@ -12,17 +12,44 @@ builder.mutationField("createProperty", (t) => {
       lng: t.arg.float({ required: true }),
     },
     resolve: async (query, _root, args, ctx) => {
-      return ctx.prisma.property.create({
-        ...query,
-        data: {
-          city: args.city,
-          state: args.state,
-          street: args.street,
-          zipCode: args.zipCode,
-          lat: args.lat,
-          lng: args.lng,
-        },
-      });
+      const data = {
+        city: args.city,
+        state: args.state,
+        zipCode: args.zipCode,
+        lat: args.lat,
+        lng: args.lng,
+      };
+      let weatherData = null;
+
+      try {
+        weatherData = await ctx.weather.getCurrentWeather(data);
+      } catch (error) {
+        console.error(error);
+        // Log the error to an external service
+        // Continue without weather data
+      }
+
+      const propertyData = {
+        ...data,
+        street: args.street,
+      };
+
+      if (!weatherData) {
+        return ctx.prisma.property.create({
+          ...query,
+          data: propertyData,
+        });
+      } else {
+        return ctx.prisma.property.create({
+          ...query,
+          data: {
+            ...propertyData,
+            weatherData: {
+              create: weatherData,
+            },
+          },
+        });
+      }
     },
   });
 });

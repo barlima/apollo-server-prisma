@@ -1,7 +1,7 @@
 import { builder } from "../../lib/builder";
 import type { WeatherData } from "../../generated/prisma/client";
 import { fromParent } from "../../utils/fromParent";
-import type { ExtractFields } from "../types/ExtractFields";
+import type { ExtractFields } from "../../types/ExtractFields";
 
 const Astro = builder.objectRef<WeatherData>("Astro").implement({
   fields: (t) => {

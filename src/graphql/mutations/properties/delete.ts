@@ -9,10 +9,15 @@ builder.mutationField("deleteProperty", (t) => {
     resolve: async (query, _root, args, ctx) => {
       const { id } = args.id;
 
-      return ctx.prisma.property.delete({
-        ...query,
-        where: { id: String(id) },
-      });
+      try {
+        return ctx.prisma.property.delete({
+          ...query,
+          where: { id: String(id) },
+        });
+      } catch (error) {
+        console.error(error);
+        // Log the error to an external service
+      }
     },
   });
 });
