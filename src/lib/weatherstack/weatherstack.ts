@@ -52,9 +52,17 @@ class Weatherstack {
   public async getCurrentWeather(
     options: CurrentWeatherOptions
   ): Promise<WeatherDataResponse | null> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+    }, 10_000);
+
     try {
       const response = await fetch(
-        `${this.baseUrl}/current?${this.getQueryParams(options).toString()}`
+        `${this.baseUrl}/current?${this.getQueryParams(options).toString()}`,
+        {
+          signal: controller.signal,
+        }
       );
 
       if (!response.ok) {
@@ -75,6 +83,8 @@ class Weatherstack {
       // Log the error to an external service
       // If required - schedule a job to retry the request
       throw error;
+    } finally {
+      clearTimeout(timeoutId);
     }
   }
 

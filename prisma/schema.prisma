@@ -79,7 +79,7 @@ model Property {
   street      String       @db.VarChar(200)
   state       USState
   zipCode     Int
-  weatherData WeatherData? // optional in case the API call fails
+  weatherData WeatherData? // It's optional only on the DB level
   lat         Float
   lng         Float
   createdAt   DateTime     @default(now())
