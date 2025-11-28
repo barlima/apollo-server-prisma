@@ -9,8 +9,9 @@ const PropertyOrderBy = builder.enumType("PropertyOrderBy", {
 });
 
 builder.queryField("properties", (t) => {
-  return t.prismaField({
-    type: ["Property"],
+  return t.prismaConnection({
+    type: "Property",
+    cursor: "id",
     args: {
       city: t.arg.string(),
       state: t.arg.string(),

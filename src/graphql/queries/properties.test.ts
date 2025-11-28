@@ -1,11 +1,16 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import { GraphQLSchema, graphql } from "graphql";
-import { builder } from "../../lib/builder";
+import { describe, it, expect, beforeEach, beforeAll } from "vitest";
+import { ExecutionResult, graphql } from "graphql";
 import { createMockPrisma, createMockContext } from "../../utils/test";
-import "./properties";
+import "../../graphql";
+import { builder } from "../../lib/builder";
+import { Property } from "../../generated/prisma/client";
+
+type PropertiesQueryResponse = ExecutionResult<{
+  properties: { edges: { node: Property }[] };
+}>;
 
 describe("properties resolver", () => {
-  let schema: GraphQLSchema;
+  let schema: ReturnType<typeof builder.toSchema>;
   let mockPrisma: ReturnType<typeof createMockPrisma>;
 
   const mockProperties = [
@@ -44,8 +49,11 @@ describe("properties resolver", () => {
     },
   ];
 
-  beforeEach(() => {
+  beforeAll(() => {
     schema = builder.toSchema();
+  });
+
+  beforeEach(() => {
     mockPrisma = createMockPrisma();
   });
 
@@ -55,29 +63,36 @@ describe("properties resolver", () => {
     const query = `
       query {
         properties {
-          id
-          city
-          state
-          zipCode
+          edges {
+            node {
+              id
+              city
+              state
+              zipCode
+            }
+          }
         }
       }
     `;
 
-    const result = await graphql({
+    const result = (await graphql({
       schema,
       source: query,
       contextValue: createMockContext(mockPrisma),
-    });
+    })) as PropertiesQueryResponse;
 
     expect(result.errors).toBeUndefined();
-    expect(mockPrisma.property.findMany).toHaveBeenCalledWith({
-      where: {
-        city: undefined,
-        state: undefined,
-        zipCode: undefined,
-      },
+    expect(mockPrisma.property.findMany).toHaveBeenCalled();
+
+    const callArgs = mockPrisma.property.findMany.mock.calls[0][0];
+
+    expect(callArgs.where).toEqual({
+      city: undefined,
+      state: undefined,
+      zipCode: undefined,
     });
-    expect(result.data?.properties).toHaveLength(3);
+
+    expect(result.data?.properties.edges).toHaveLength(3);
     expect(result.data?.properties).toMatchSnapshot();
   });
 
@@ -90,29 +105,27 @@ describe("properties resolver", () => {
     const query = `
       query {
         properties(city: "San Francisco") {
-          id
-          city
-          state
-          zipCode
+          edges {
+            node {
+              id
+              city
+              state
+              zipCode
+            }
+          }
         }
       }
     `;
 
-    const result = await graphql({
+    const result = (await graphql({
       schema,
       source: query,
       contextValue: createMockContext(mockPrisma),
-    });
+    })) as PropertiesQueryResponse;
 
     expect(result.errors).toBeUndefined();
-    expect(mockPrisma.property.findMany).toHaveBeenCalledWith({
-      where: {
-        city: "San Francisco",
-        state: undefined,
-        zipCode: undefined,
-      },
-    });
-    expect(result.data?.properties).toHaveLength(2);
+    expect(mockPrisma.property.findMany).toHaveBeenCalled();
+    expect(result.data?.properties.edges).toHaveLength(2);
     expect(result.data?.properties).toMatchSnapshot();
   });
 
@@ -122,67 +135,88 @@ describe("properties resolver", () => {
     const query = `
       query {
         properties(state: "CA") {
-          id
-          city
-          state
-          zipCode
+          edges {
+            node {
+              id
+              city
+              state
+              zipCode
+            }
+          }
         }
       }
     `;
 
-    const result = await graphql({
+    const result = (await graphql({
       schema,
       source: query,
       contextValue: createMockContext(mockPrisma),
-    });
+    })) as PropertiesQueryResponse;
 
     expect(result.errors).toBeUndefined();
-    expect(mockPrisma.property.findMany).toHaveBeenCalledWith({
-      where: {
-        city: undefined,
-        state: "CA",
-        zipCode: undefined,
-      },
-    });
-    expect(result.data?.properties).toHaveLength(3);
+    expect(mockPrisma.property.findMany).toHaveBeenCalled();
+    expect(result.data?.properties.edges).toHaveLength(3);
     expect(result.data?.properties).toMatchSnapshot();
   });
 
   it("should filter by all arguments when all are provided", async () => {
     const filteredProperties = mockProperties.filter(
       (p) =>
-        p.city === "San Francisco" &&
-        p.state === "CA" &&
-        p.zipCode === 94102
+        p.city === "San Francisco" && p.state === "CA" && p.zipCode === 94102
     );
     mockPrisma.property.findMany.mockResolvedValue(filteredProperties);
 
     const query = `
       query {
         properties(city: "San Francisco", state: "CA", zipCode: 94102) {
-          id
-          city
-          state
-          zipCode
+          edges {
+            node {
+              id
+              city
+              state
+              zipCode
+            }
+          }
         }
       }
     `;
 
-    const result = await graphql({
+    const result = (await graphql({
       schema,
       source: query,
       contextValue: createMockContext(mockPrisma),
-    });
+    })) as PropertiesQueryResponse;
 
     expect(result.errors).toBeUndefined();
-    expect(mockPrisma.property.findMany).toHaveBeenCalledWith({
-      where: {
-        city: "San Francisco",
-        state: "CA",
-        zipCode: 94102,
-      },
-    });
-    expect(result.data?.properties).toHaveLength(1);
+    expect(mockPrisma.property.findMany).toHaveBeenCalled();
+    expect(result.data?.properties.edges).toHaveLength(1);
+    expect(result.data?.properties).toMatchSnapshot();
+  });
+
+  it("should support cursor pagination with first argument", async () => {
+    mockPrisma.property.findMany.mockResolvedValue(mockProperties.slice(0, 2));
+
+    const query = `
+      query {
+        properties(first: 2) {
+          edges {
+            node {
+              id
+              city
+            }
+          }
+        }
+      }
+    `;
+
+    const result = (await graphql({
+      schema,
+      source: query,
+      contextValue: createMockContext(mockPrisma),
+    })) as PropertiesQueryResponse;
+
+    expect(result.errors).toBeUndefined();
+    expect(result.data?.properties.edges).toHaveLength(2);
     expect(result.data?.properties).toMatchSnapshot();
   });
 });

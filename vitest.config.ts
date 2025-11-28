@@ -5,4 +5,9 @@ export default defineConfig({
     globals: true,
     environment: "node",
   },
+  resolve: {
+    alias: {
+      graphql: "graphql/index.js",
+    },
+  },
 });

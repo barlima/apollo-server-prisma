@@ -1,8 +1,8 @@
 import { builder } from "../../lib/builder";
 
-builder.prismaObject("Property", {
+builder.prismaNode("Property", {
+  id: { field: "id" },
   fields: (t) => ({
-    id: t.exposeID("id"),
     city: t.exposeString("city"),
     street: t.exposeString("street"),
     state: t.exposeString("state"),

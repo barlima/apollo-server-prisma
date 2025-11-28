@@ -1,0 +1,120 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`properties resolver > should filter by all arguments when all are provided 1`] = `
+{
+  "edges": [
+    {
+      "node": {
+        "city": "San Francisco",
+        "id": "UHJvcGVydHk6MQ==",
+        "state": "CA",
+        "zipCode": 94102,
+      },
+    },
+  ],
+}
+`;
+
+exports[`properties resolver > should filter by city when city is provided 1`] = `
+{
+  "edges": [
+    {
+      "node": {
+        "city": "San Francisco",
+        "id": "UHJvcGVydHk6MQ==",
+        "state": "CA",
+        "zipCode": 94102,
+      },
+    },
+    {
+      "node": {
+        "city": "San Francisco",
+        "id": "UHJvcGVydHk6Mw==",
+        "state": "CA",
+        "zipCode": 94110,
+      },
+    },
+  ],
+}
+`;
+
+exports[`properties resolver > should filter by state when state is provided 1`] = `
+{
+  "edges": [
+    {
+      "node": {
+        "city": "San Francisco",
+        "id": "UHJvcGVydHk6MQ==",
+        "state": "CA",
+        "zipCode": 94102,
+      },
+    },
+    {
+      "node": {
+        "city": "Los Angeles",
+        "id": "UHJvcGVydHk6Mg==",
+        "state": "CA",
+        "zipCode": 90012,
+      },
+    },
+    {
+      "node": {
+        "city": "San Francisco",
+        "id": "UHJvcGVydHk6Mw==",
+        "state": "CA",
+        "zipCode": 94110,
+      },
+    },
+  ],
+}
+`;
+
+exports[`properties resolver > should return all properties when no filters are applied 1`] = `
+{
+  "edges": [
+    {
+      "node": {
+        "city": "San Francisco",
+        "id": "UHJvcGVydHk6MQ==",
+        "state": "CA",
+        "zipCode": 94102,
+      },
+    },
+    {
+      "node": {
+        "city": "Los Angeles",
+        "id": "UHJvcGVydHk6Mg==",
+        "state": "CA",
+        "zipCode": 90012,
+      },
+    },
+    {
+      "node": {
+        "city": "San Francisco",
+        "id": "UHJvcGVydHk6Mw==",
+        "state": "CA",
+        "zipCode": 94110,
+      },
+    },
+  ],
+}
+`;
+
+exports[`properties resolver > should support cursor pagination with first argument 1`] = `
+{
+  "edges": [
+    {
+      "node": {
+        "city": "San Francisco",
+        "id": "UHJvcGVydHk6MQ==",
+      },
+    },
+    {
+      "node": {
+        "city": "Los Angeles",
+        "id": "UHJvcGVydHk6Mg==",
+      },
+    },
+  ],
+}
+`;

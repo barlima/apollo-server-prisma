@@ -1,5 +1,6 @@
 import SchemaBuilder from "@pothos/core";
 import PrismaPlugin from "@pothos/plugin-prisma";
+import RelayPlugin from "@pothos/plugin-relay";
 
 import type PrismaTypes from "../generated/pothos";
 import { getDatamodel } from "../generated/pothos";
@@ -9,7 +10,7 @@ import { config } from "../config";
 
 const builder = new SchemaBuilder<{
   Context: Context;
-  PrismaTypes: PrismaTypes; // This gives the builder all the type information about your prisma schema
+  PrismaTypes: PrismaTypes;
   Scalars: {
     DateTime: {
       Input: Date;
@@ -17,7 +18,11 @@ const builder = new SchemaBuilder<{
     };
   };
 }>({
-  plugins: [PrismaPlugin],
+  plugins: [PrismaPlugin, RelayPlugin],
+  relay: {
+    clientMutationId: "omit",
+    cursorType: "String",
+  },
   prisma: {
     client: prisma,
     // This give pothos information about your tables, relations, and indexes to help it generate optimal queries at runtime.
