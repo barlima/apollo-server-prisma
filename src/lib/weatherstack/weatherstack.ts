@@ -56,7 +56,7 @@ class Weatherstack {
       console.error(error);
       // Log the error to an external service
       // If required - schedule a job to retry the request
-      return null;
+      throw error;
     }
   }
 

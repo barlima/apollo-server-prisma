@@ -23,33 +23,27 @@ builder.mutationField("createProperty", (t) => {
 
       try {
         weatherData = await ctx.weather.getCurrentWeather(data);
+
+        if (!weatherData) {
+          throw new Error("Failed to get weather data");
+        }
       } catch (error) {
         console.error(error);
         // Log the error to an external service
-        // Continue without weather data
+        // In case the weather data is not available, return an error
+        throw error;
       }
 
-      const propertyData = {
-        ...data,
-        street: args.street,
-      };
-
-      if (!weatherData) {
-        return ctx.prisma.property.create({
-          ...query,
-          data: propertyData,
-        });
-      } else {
-        return ctx.prisma.property.create({
-          ...query,
-          data: {
-            ...propertyData,
-            weatherData: {
-              create: weatherData,
-            },
+      return ctx.prisma.property.create({
+        ...query,
+        data: {
+          ...data,
+          street: args.street,
+          weatherData: {
+            create: weatherData,
           },
-        });
-      }
+        },
+      });
     },
   });
 });
