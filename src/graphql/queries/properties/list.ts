@@ -1,5 +1,6 @@
 import { builder } from "../../../lib/builder";
 import { nonNullable } from "../../../utils/nonNullable";
+import { USStateEnum } from "../../enums/us-state";
 
 const PropertyOrderBy = builder.enumType("PropertyOrderBy", {
   values: {
@@ -14,7 +15,7 @@ builder.queryField("properties", (t) => {
     cursor: "id",
     args: {
       city: t.arg.string(),
-      state: t.arg.string(),
+      state: t.arg({ type: USStateEnum }),
       zipCode: t.arg.int(),
       orderBy: t.arg({ type: PropertyOrderBy }),
     },
@@ -25,9 +26,7 @@ builder.queryField("properties", (t) => {
           city: args.city
             ? { equals: args.city, mode: "insensitive" }
             : undefined,
-          state: args.state
-            ? { equals: args.state, mode: "insensitive" }
-            : undefined,
+          state: nonNullable(args.state),
           zipCode: nonNullable(args.zipCode),
         },
         orderBy: {

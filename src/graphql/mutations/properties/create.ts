@@ -1,11 +1,12 @@
 import { builder } from "../../../lib/builder";
+import { USStateEnum } from "../../enums/us-state";
 
 builder.mutationField("createProperty", (t) => {
   return t.prismaField({
     type: "Property",
     args: {
       city: t.arg.string({ required: true }),
-      state: t.arg.string({ required: true }),
+      state: t.arg({ type: USStateEnum, required: true }),
       street: t.arg.string({ required: true }),
       zipCode: t.arg.int({ required: true }),
       lat: t.arg.float({ required: true }),

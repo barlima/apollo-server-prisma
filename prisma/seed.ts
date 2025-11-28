@@ -1,6 +1,6 @@
 import { PrismaPg } from "@prisma/adapter-pg";
 import { config } from "../src/config";
-import { PrismaClient } from "../src/generated/prisma/client";
+import { PrismaClient, USState } from "../src/generated/prisma/client";
 
 const adapter = new PrismaPg({ connectionString: config.databaseUrl });
 const prisma = new PrismaClient({
@@ -18,14 +18,14 @@ async function main() {
       city: "San Francisco",
       lat: 37.782366031390154,
       lng: -122.46198178917844,
-      state: "CA",
+      state: USState.CA,
       street: "334-336 4th Ave",
       zipCode: 94118,
     },
     {
       city: "New York",
       street: "1324 Eastern Pkwy #2",
-      state: "NY",
+      state: USState.NY,
       zipCode: 11233,
       lat: 40.66798468226293,
       lng: -73.92454140272604,
@@ -33,7 +33,7 @@ async function main() {
     {
       city: "New York",
       street: "149 Pembroke St, Brooklyn",
-      state: "NY",
+      state: USState.NY,
       zipCode: 11235,
       lat: 40.57964195849016,
       lng: -73.93675998878766,
@@ -41,7 +41,7 @@ async function main() {
     {
       city: "Dallas",
       street: "5828 Prospect Ave",
-      state: "TX",
+      state: USState.TX,
       zipCode: 75206,
       lat: 32.814492400807595,
       lng: -96.76684993239417,
