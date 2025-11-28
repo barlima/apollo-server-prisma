@@ -1,5 +1,5 @@
-import { builder } from "../../lib/builder";
-import { nonNullable } from "../../utils/nonNullable";
+import { builder } from "../../../lib/builder";
+import { nonNullable } from "../../../utils/nonNullable";
 
 const PropertyOrderBy = builder.enumType("PropertyOrderBy", {
   values: {

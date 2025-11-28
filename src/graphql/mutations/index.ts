@@ -1,2 +1,1 @@
-import "./createProperty";
-import "./deleteProperty";
+import "./properties";

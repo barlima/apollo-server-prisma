@@ -1,4 +1,4 @@
-import { builder } from "../../lib/builder";
+import { builder } from "../../../lib/builder";
 
 builder.mutationField("createProperty", (t) => {
   return t.prismaField({
