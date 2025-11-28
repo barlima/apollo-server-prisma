@@ -1,2 +1,2 @@
-export * from "./Property";
-export * from "./WeatherData";
+import "./Property";
+import "./WeatherData";

@@ -1,3 +1,4 @@
-export * from "./scalars";
-export * from "./models";
-export * from "./queries";
+import "./scalars";
+import "./models";
+import "./queries";
+import "./mutations";
