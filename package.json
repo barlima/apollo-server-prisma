@@ -14,7 +14,8 @@
     "commitlint": "commitlint --edit",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+    "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@apollo/server": "5.2.0",

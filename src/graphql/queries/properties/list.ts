@@ -22,8 +22,12 @@ builder.queryField("properties", (t) => {
       return ctx.prisma.property.findMany({
         ...query,
         where: {
-          city: nonNullable(args.city),
-          state: nonNullable(args.state),
+          city: args.city
+            ? { equals: args.city, mode: "insensitive" }
+            : undefined,
+          state: args.state
+            ? { equals: args.state, mode: "insensitive" }
+            : undefined,
           zipCode: nonNullable(args.zipCode),
         },
         orderBy: {
