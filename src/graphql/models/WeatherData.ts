@@ -1,4 +1,47 @@
 import { builder } from "../../lib/builder";
+import type { WeatherData } from "../../generated/prisma/client";
+import { fromParent } from "../../utils/fromParent";
+import type { ExtractFields } from "../types/ExtractFields";
+
+const Astro = builder.objectRef<WeatherData>("Astro").implement({
+  fields: (t) => {
+    const resolve = (field: ExtractFields<WeatherData, "astro">) => {
+      if (field === "MoonIllumination") {
+        return t.int({ resolve: fromParent("astroMoonIllumination") });
+      }
+
+      return t.string({ resolve: fromParent(`astro${field}`) });
+    };
+
+    return {
+      sunrise: resolve("Sunrise"),
+      sunset: resolve("Sunset"),
+      moonrise: resolve("Moonrise"),
+      moonset: resolve("Moonset"),
+      moonPhase: resolve("MoonPhase"),
+      moonIllumination: resolve("MoonIllumination"),
+    };
+  },
+});
+
+const AirQuality = builder.objectRef<WeatherData>("AirQuality").implement({
+  fields: (t) => {
+    const resolve = (field: ExtractFields<WeatherData, "airQuality">) => {
+      return t.float({ resolve: fromParent(`airQuality${field}`) });
+    };
+
+    return {
+      co: resolve("Co"),
+      no2: resolve("No2"),
+      o3: resolve("O3"),
+      so2: resolve("So2"),
+      pm25: resolve("Pm25"),
+      pm10: resolve("Pm10"),
+      usEpaIndex: resolve("UsEpaIndex"),
+      gbDefraIndex: resolve("GbDefraIndex"),
+    };
+  },
+});
 
 builder.prismaObject("WeatherData", {
   fields: (t) => ({
@@ -8,20 +51,14 @@ builder.prismaObject("WeatherData", {
     weatherCode: t.exposeInt("weatherCode"),
     weatherIcons: t.exposeStringList("weatherIcons"),
     weatherDescriptions: t.exposeStringList("weatherDescriptions"),
-    astroSunrise: t.exposeString("astroSunrise"),
-    astroSunset: t.exposeString("astroSunset"),
-    astroMoonrise: t.exposeString("astroMoonrise"),
-    astroMoonset: t.exposeString("astroMoonset"),
-    astroMoonPhase: t.exposeString("astroMoonPhase"),
-    astroMoonIllumination: t.exposeInt("astroMoonIllumination"),
-    airQualityCo: t.exposeFloat("airQualityCo"),
-    airQualityNo2: t.exposeFloat("airQualityNo2"),
-    airQualityO3: t.exposeFloat("airQualityO3"),
-    airQualitySo2: t.exposeFloat("airQualitySo2"),
-    airQualityPm25: t.exposeFloat("airQualityPm25"),
-    airQualityPm10: t.exposeFloat("airQualityPm10"),
-    airQualityUsEpaIndex: t.exposeInt("airQualityUsEpaIndex"),
-    airQualityGbDefraIndex: t.exposeInt("airQualityGbDefraIndex"),
+    astro: t.field({
+      type: Astro,
+      resolve: (parent) => parent,
+    }),
+    airQuality: t.field({
+      type: AirQuality,
+      resolve: (parent) => parent,
+    }),
     windSpeed: t.exposeInt("windSpeed"),
     windDegree: t.exposeInt("windDegree"),
     windDir: t.exposeString("windDir"),
