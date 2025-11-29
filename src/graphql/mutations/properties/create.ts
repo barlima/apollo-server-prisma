@@ -28,36 +28,18 @@ builder.mutationField("createProperty", (t) => {
           max: 99950,
         },
       }),
-      lat: t.arg.float({
-        required: true,
-        validate: {
-          min: -90,
-          max: 90,
-        },
-      }),
-      lng: t.arg.float({
-        required: true,
-        validate: {
-          min: -180,
-          max: 180,
-        },
-      }),
     },
     resolve: async (query, _root, args, ctx) => {
-      const data = {
-        city: args.city,
-        state: args.state,
-        zipCode: args.zipCode,
-        lat: args.lat,
-        lng: args.lng,
-      };
-
-      let weatherData = null;
+      let weatherResponse = null;
 
       try {
-        weatherData = await ctx.weather.getCurrentWeather(data);
+        weatherResponse = await ctx.weather.getWeather({
+          city: args.city,
+          state: args.state,
+          zipCode: args.zipCode,
+        });
 
-        if (!weatherData) {
+        if (!weatherResponse) {
           throw new GraphQLError("Failed to get weather data", {
             extensions: {
               code: "FAILED_TO_GET_WEATHER_DATA",
@@ -75,10 +57,14 @@ builder.mutationField("createProperty", (t) => {
         return ctx.prisma.property.create({
           ...query,
           data: {
-            ...data,
             street: args.street,
+            city: args.city,
+            state: args.state,
+            zipCode: args.zipCode,
+            lat: weatherResponse.location.lat,
+            lng: weatherResponse.location.lng,
             weatherData: {
-              create: weatherData,
+              create: weatherResponse.current,
             },
           },
         });

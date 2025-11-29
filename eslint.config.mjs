@@ -42,6 +42,7 @@ export default tseslint.config(
       "vitest.config.ts",
       "commitlint.config.ts",
       "prisma.config.ts",
+      "build.js",
     ],
   }
 );

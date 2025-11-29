@@ -4,6 +4,10 @@ import { z } from "zod";
 // we have to create a schema that matches the response
 // Also we want to use camelCase across the codebase
 export const weatherstackCurrentResponseSchema = z.object({
+  location: z.object({
+    lat: z.string(),
+    lon: z.string(),
+  }),
   current: z.object({
     observation_time: z.string(),
     temperature: z.number(),

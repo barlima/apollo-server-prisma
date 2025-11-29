@@ -2,12 +2,12 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { Weatherstack } from "./weatherstack";
 import { WeatherstackCurrentResponse } from "./schema";
 import { ILogger } from "../logger/types";
-import { WeatherDataResponse } from "./types";
+import { WeatherResponse } from "./types";
 import { ICache } from "../cache/type";
 
 describe("Weatherstack", () => {
   let mockLogger: ILogger;
-  let mockCache: ICache<WeatherDataResponse>;
+  let mockCache: ICache<WeatherResponse>;
   let fakeWeatherResponse: WeatherstackCurrentResponse;
 
   beforeEach(() => {
@@ -20,6 +20,10 @@ describe("Weatherstack", () => {
       clear: vi.fn(),
     };
     fakeWeatherResponse = {
+      location: {
+        lat: "40.7128",
+        lon: "-74.0060",
+      },
       current: {
         observation_time: "10:00 AM",
         temperature: 20,
@@ -73,17 +77,17 @@ describe("Weatherstack", () => {
       mockCache
     );
 
-    const result = await service.getCurrentWeather({
+    const result = await service.getWeather({
       city: "New York",
     });
 
     expect(mockHttpClient.fetch).toHaveBeenCalled();
     expect(result).toBeDefined();
-    expect(result?.temperature).toBe(20);
-    expect(result?.windSpeed).toBe(10);
-    expect(result?.astroSunset).toBe("6:00 PM");
-    expect(result?.airQualityCo).toBe(10);
-    expect(Object.values(result || {}).length).toBe(29);
+    expect(result?.current.temperature).toBe(20);
+    expect(result?.current.windSpeed).toBe(10);
+    expect(result?.current.astroSunset).toBe("6:00 PM");
+    expect(result?.current.airQualityCo).toBe(10);
+    expect(Object.values(result?.current || {}).length).toBe(29);
   });
 
   it("should throw a validation error if the response is invalid", async () => {
@@ -102,7 +106,7 @@ describe("Weatherstack", () => {
     );
 
     await expect(
-      service.getCurrentWeather({
+      service.getWeather({
         city: "New York",
       })
     ).rejects.toThrow();
@@ -123,7 +127,7 @@ describe("Weatherstack", () => {
       mockCache
     );
 
-    await service.getCurrentWeather({
+    await service.getWeather({
       zipCode: 10001,
     });
 

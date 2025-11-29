@@ -12,6 +12,7 @@ import type {
   CurrentWeatherOptions,
   IWeatherService,
   WeatherDataResponse,
+  WeatherResponse,
 } from "./types";
 import type { IHttpClient } from "../httpCleint/types";
 import type { ILogger } from "../logger/types";
@@ -31,7 +32,7 @@ export class Weatherstack implements IWeatherService {
     // Cache the results of the weatherstack API calls for 5 minutes
     // I've decided to go for the zip code since the cities might be large
     // optionally we could go for the entire city+state combination
-    private readonly cache: ICache<WeatherDataResponse>
+    private readonly cache: ICache<WeatherResponse>
   ) {
     this.baseUrl = "https://api.weatherstack.com";
     this.relevantKeys = [
@@ -55,9 +56,9 @@ export class Weatherstack implements IWeatherService {
     ];
   }
 
-  public async getCurrentWeather(
+  public async getWeather(
     options: CurrentWeatherOptions
-  ): Promise<WeatherDataResponse | null> {
+  ): Promise<WeatherResponse | null> {
     // Check zipCode in the cache
     if (options.zipCode) {
       const cached = this.cache.get(options.zipCode);
@@ -84,13 +85,19 @@ export class Weatherstack implements IWeatherService {
       const normalizedData = mapRecordFromSnakeToCamel(relevantData);
 
       const weatherData = this.formatWeatherData(normalizedData);
+      const location = {
+        lat: parseFloat(validatedData.location.lat),
+        lng: parseFloat(validatedData.location.lon),
+      };
+
+      const result = { current: weatherData, location };
 
       // Cache the result
       if (options.zipCode) {
-        this.cache.set(options.zipCode, weatherData);
+        this.cache.set(options.zipCode, result);
       }
 
-      return weatherData;
+      return result;
     } catch (error) {
       this.logger.error(error as Error);
       // Possibly schedule a job to retry the request
@@ -163,7 +170,7 @@ export const createWeatherstackService = (
   logger: ILogger
 ): IWeatherService => {
   const httpClient = new HttpClient();
-  const cache = new SimpleCache<WeatherDataResponse>(5);
+  const cache = new SimpleCache<WeatherResponse>(5);
 
   return new Weatherstack(apiKey, httpClient, logger, cache);
 };

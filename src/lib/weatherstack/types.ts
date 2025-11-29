@@ -5,12 +5,20 @@ export type WeatherDataResponse = Omit<
   "id" | "propertyId" | "createdAt" | "updatedAt"
 >;
 
+export type WeatherResponse = {
+  current: WeatherDataResponse;
+  location: {
+    lat: number;
+    lng: number;
+  };
+};
+
 export type CurrentWeatherOptions = Partial<
-  Pick<Property, "city" | "state" | "zipCode" | "lat" | "lng">
+  Pick<Property, "city" | "state" | "zipCode">
 >;
 
 export interface IWeatherService {
-  getCurrentWeather(
+  getWeather(
     options: CurrentWeatherOptions
-  ): Promise<WeatherDataResponse | null>;
+  ): Promise<WeatherResponse | null>;
 }
