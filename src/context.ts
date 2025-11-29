@@ -18,9 +18,9 @@ const logger = createLogger();
 const weather = createWeatherstackService(config.weatherstackApiKey, logger);
 
 export const createContext = async (): Promise<Context> => {
-  return {
+  return Promise.resolve({
     prisma,
     weather,
     logger,
-  };
+  });
 };

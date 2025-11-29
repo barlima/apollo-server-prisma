@@ -4,7 +4,6 @@ import { WeatherstackCurrentResponse } from "./schema";
 import { ILogger } from "../logger/types";
 import { WeatherDataResponse } from "./types";
 import { ICache } from "../cache/type";
-import { SimpleCache } from "../cache";
 
 describe("Weatherstack", () => {
   let mockLogger: ILogger;

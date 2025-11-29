@@ -19,4 +19,6 @@ export const createMockContext = (
   mockPrisma: ReturnType<typeof createMockPrisma>
 ): Context => ({
   prisma: mockPrisma as unknown as Context["prisma"],
+  weather: {} as Context["weather"],
+  logger: {} as Context["logger"],
 });
