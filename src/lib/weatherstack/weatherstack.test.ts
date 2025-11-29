@@ -2,14 +2,23 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { Weatherstack } from "./weatherstack";
 import { WeatherstackCurrentResponse } from "./schema";
 import { ILogger } from "../logger/types";
+import { WeatherDataResponse } from "./types";
+import { ICache } from "../cache/type";
+import { SimpleCache } from "../cache";
 
 describe("Weatherstack", () => {
   let mockLogger: ILogger;
+  let mockCache: ICache<WeatherDataResponse>;
   let fakeWeatherResponse: WeatherstackCurrentResponse;
 
   beforeEach(() => {
     mockLogger = {
       error: vi.fn(),
+    };
+    mockCache = {
+      get: vi.fn(),
+      set: vi.fn(),
+      clear: vi.fn(),
     };
     fakeWeatherResponse = {
       current: {
@@ -58,7 +67,12 @@ describe("Weatherstack", () => {
       }),
     };
 
-    const service = new Weatherstack("1234567890", mockHttpClient, mockLogger);
+    const service = new Weatherstack(
+      "1234567890",
+      mockHttpClient,
+      mockLogger,
+      mockCache
+    );
 
     const result = await service.getCurrentWeather({
       city: "New York",
@@ -81,12 +95,39 @@ describe("Weatherstack", () => {
       }),
     };
 
-    const service = new Weatherstack("1234567890", mockHttpClient, mockLogger);
+    const service = new Weatherstack(
+      "1234567890",
+      mockHttpClient,
+      mockLogger,
+      mockCache
+    );
 
     await expect(
       service.getCurrentWeather({
         city: "New York",
       })
     ).rejects.toThrow();
+  });
+
+  it("shout set cache if zipCode is provided", async () => {
+    const mockHttpClient = {
+      fetch: vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve(fakeWeatherResponse),
+      }),
+    };
+
+    const service = new Weatherstack(
+      "1234567890",
+      mockHttpClient,
+      mockLogger,
+      mockCache
+    );
+
+    await service.getCurrentWeather({
+      zipCode: 10001,
+    });
+
+    expect(mockCache.set).toHaveBeenCalled();
   });
 });

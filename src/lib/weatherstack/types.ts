@@ -1,11 +1,11 @@
 import { Property, WeatherData } from "../../generated/prisma/client";
 
-type WeatherDataResponse = Omit<
+export type WeatherDataResponse = Omit<
   WeatherData,
   "id" | "propertyId" | "createdAt" | "updatedAt"
 >;
 
-type CurrentWeatherOptions = Partial<
+export type CurrentWeatherOptions = Partial<
   Pick<Property, "city" | "state" | "zipCode" | "lat" | "lng">
 >;
 

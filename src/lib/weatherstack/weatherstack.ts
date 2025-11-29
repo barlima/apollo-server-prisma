@@ -1,4 +1,3 @@
-import { Property, WeatherData } from "../../generated/prisma/client";
 import { ObjectSnakeToCamel } from "../../types/ObjectSnakeToCamel";
 import { mapRecordFromSnakeToCamel } from "../../utils/mapRecordFromSnakeToCamel";
 import { pick } from "../../utils/pick";
@@ -7,19 +6,16 @@ import {
   weatherstackCurrentResponseSchema,
 } from "./schema";
 import { HttpClient } from "../httpCleint";
+import { SimpleCache } from "../cache";
 
-import type { IWeatherService } from "./types";
+import type {
+  CurrentWeatherOptions,
+  IWeatherService,
+  WeatherDataResponse,
+} from "./types";
 import type { IHttpClient } from "../httpCleint/types";
 import type { ILogger } from "../logger/types";
-
-type WeatherDataResponse = Omit<
-  WeatherData,
-  "id" | "propertyId" | "createdAt" | "updatedAt"
->;
-
-type CurrentWeatherOptions = Partial<
-  Pick<Property, "city" | "state" | "zipCode" | "lat" | "lng">
->;
+import type { ICache } from "../cache/type";
 
 export class Weatherstack implements IWeatherService {
   private readonly baseUrl: string;
@@ -31,7 +27,11 @@ export class Weatherstack implements IWeatherService {
   constructor(
     private readonly apiKey: string,
     private readonly httpClient: IHttpClient,
-    private readonly logger: ILogger
+    private readonly logger: ILogger,
+    // Cache the results of the weatherstack API calls for 5 minutes
+    // I've decided to go for the zip code since the cities might be large
+    // optionally we could go for the entire city+state combination
+    private readonly cache: ICache<WeatherDataResponse>
   ) {
     this.baseUrl = "https://api.weatherstack.com";
     this.relevantKeys = [
@@ -58,6 +58,14 @@ export class Weatherstack implements IWeatherService {
   public async getCurrentWeather(
     options: CurrentWeatherOptions
   ): Promise<WeatherDataResponse | null> {
+    // Check zipCode in the cache
+    if (options.zipCode) {
+      const cached = this.cache.get(options.zipCode);
+      if (cached) {
+        return cached;
+      }
+    }
+
     try {
       const response = await this.httpClient.fetch(
         `${this.baseUrl}/current?${this.getQueryParams(options).toString()}`
@@ -75,7 +83,14 @@ export class Weatherstack implements IWeatherService {
       const relevantData = this.pickRelevantData(validatedData);
       const normalizedData = mapRecordFromSnakeToCamel(relevantData);
 
-      return this.formatWeatherData(normalizedData);
+      const weatherData = this.formatWeatherData(normalizedData);
+
+      // Cache the result
+      if (options.zipCode) {
+        this.cache.set(options.zipCode, weatherData);
+      }
+
+      return weatherData;
     } catch (error) {
       this.logger.error(error as Error);
       // Possibly schedule a job to retry the request
@@ -148,6 +163,7 @@ export const createWeatherstackService = (
   logger: ILogger
 ): IWeatherService => {
   const httpClient = new HttpClient();
+  const cache = new SimpleCache<WeatherDataResponse>(5);
 
-  return new Weatherstack(apiKey, httpClient, logger);
+  return new Weatherstack(apiKey, httpClient, logger, cache);
 };
