@@ -20,7 +20,6 @@ export const weatherstackCurrentResponseSchema = z.object({
     feelslike: z.number(),
     uv_index: z.number(),
     visibility: z.number(),
-    is_day: z.string(),
     air_quality: z.object({
       co: z.string(),
       no2: z.string(),

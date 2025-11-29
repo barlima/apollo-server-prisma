@@ -60,9 +60,9 @@ builder.mutationField("createProperty", (t) => {
           throw new Error("Failed to get weather data");
         }
       } catch (error) {
-        console.error(error);
-        // Log the error to an external service
+        ctx.logger.error(error as Error);
         // In case the weather data is not available, return an error
+        // and do not proceed with the creation of the property
         throw error;
       }
 

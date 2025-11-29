@@ -15,8 +15,7 @@ builder.mutationField("deleteProperty", (t) => {
           where: { id: String(id) },
         });
       } catch (error) {
-        console.error(error);
-        // Log the error to an external service
+        ctx.logger.error(error as Error);
         throw error;
       }
     },

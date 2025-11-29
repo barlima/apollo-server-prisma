@@ -1,4 +1,3 @@
-import { config } from "../../config";
 import { Property, WeatherData } from "../../generated/prisma/client";
 import { ObjectSnakeToCamel } from "../../types/ObjectSnakeToCamel";
 import { mapRecordFromSnakeToCamel } from "../../utils/mapRecordFromSnakeToCamel";
@@ -7,6 +6,11 @@ import {
   WeatherstackCurrentResponse,
   weatherstackCurrentResponseSchema,
 } from "./schema";
+import { HttpClient } from "../httpCleint";
+
+import type { IWeatherService } from "./types";
+import type { IHttpClient } from "../httpCleint/types";
+import type { ILogger } from "../logger/types";
 
 type WeatherDataResponse = Omit<
   WeatherData,
@@ -17,16 +21,18 @@ type CurrentWeatherOptions = Partial<
   Pick<Property, "city" | "state" | "zipCode" | "lat" | "lng">
 >;
 
-class Weatherstack {
-  private readonly apiKey: string;
+export class Weatherstack implements IWeatherService {
   private readonly baseUrl: string;
 
   // In case of changes in the response, keep the list of fields
   // that we want to select and validate
   private readonly relevantKeys: (keyof WeatherstackCurrentResponse["current"])[];
 
-  constructor(apiKey: string) {
-    this.apiKey = apiKey;
+  constructor(
+    private readonly apiKey: string,
+    private readonly httpClient: IHttpClient,
+    private readonly logger: ILogger
+  ) {
     this.baseUrl = "https://api.weatherstack.com";
     this.relevantKeys = [
       "observation_time",
@@ -52,17 +58,9 @@ class Weatherstack {
   public async getCurrentWeather(
     options: CurrentWeatherOptions
   ): Promise<WeatherDataResponse | null> {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => {
-      controller.abort();
-    }, 10_000);
-
     try {
-      const response = await fetch(
-        `${this.baseUrl}/current?${this.getQueryParams(options).toString()}`,
-        {
-          signal: controller.signal,
-        }
+      const response = await this.httpClient.fetch(
+        `${this.baseUrl}/current?${this.getQueryParams(options).toString()}`
       );
 
       if (!response.ok) {
@@ -79,12 +77,9 @@ class Weatherstack {
 
       return this.formatWeatherData(normalizedData);
     } catch (error) {
-      console.error(error);
-      // Log the error to an external service
-      // If required - schedule a job to retry the request
+      this.logger.error(error as Error);
+      // Possibly schedule a job to retry the request
       throw error;
-    } finally {
-      clearTimeout(timeoutId);
     }
   }
 
@@ -148,4 +143,11 @@ class Weatherstack {
   }
 }
 
-export const weatherstack = new Weatherstack(config.weatherstackApiKey);
+export const createWeatherstackService = (
+  apiKey: string,
+  logger: ILogger
+): IWeatherService => {
+  const httpClient = new HttpClient();
+
+  return new Weatherstack(apiKey, httpClient, logger);
+};
