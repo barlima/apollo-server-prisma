@@ -1,3 +1,3 @@
 export interface ILogger {
-  error(error: Error, ...args: unknown[]): void;
+  error(error: unknown, ...args: unknown[]): void;
 }

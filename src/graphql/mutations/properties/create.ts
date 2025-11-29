@@ -1,3 +1,4 @@
+import { GraphQLError } from "graphql";
 import { builder } from "../../../lib/builder";
 import { USStateEnum } from "../../enums/us-state";
 
@@ -57,7 +58,11 @@ builder.mutationField("createProperty", (t) => {
         weatherData = await ctx.weather.getCurrentWeather(data);
 
         if (!weatherData) {
-          throw new Error("Failed to get weather data");
+          throw new GraphQLError("Failed to get weather data", {
+            extensions: {
+              code: "FAILED_TO_GET_WEATHER_DATA",
+            },
+          });
         }
       } catch (error) {
         ctx.logger.error(error as Error);
@@ -66,16 +71,21 @@ builder.mutationField("createProperty", (t) => {
         throw error;
       }
 
-      return ctx.prisma.property.create({
-        ...query,
-        data: {
-          ...data,
-          street: args.street,
-          weatherData: {
-            create: weatherData,
+      try {
+        return ctx.prisma.property.create({
+          ...query,
+          data: {
+            ...data,
+            street: args.street,
+            weatherData: {
+              create: weatherData,
+            },
           },
-        },
-      });
+        });
+      } catch (error) {
+        ctx.logger.error(error as Error);
+        throw error;
+      }
     },
   });
 });
