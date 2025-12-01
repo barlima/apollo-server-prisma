@@ -31,7 +31,8 @@ export class Weatherstack implements IWeatherService {
     private readonly logger: ILogger,
     // Cache the results of the weatherstack API calls for 5 minutes
     // I've decided to go for the zip code since the cities might be large
-    // optionally we could go for the entire city+state combination
+    // However in that case the lat/lng would be the same for the entire zip code area
+    // Optionally we could go for the entire city+state combination
     private readonly cache: ICache<WeatherResponse>
   ) {
     this.baseUrl = "https://api.weatherstack.com";

@@ -35,6 +35,7 @@ builder.mutationField("createProperty", (t) => {
       try {
         weatherResponse = await ctx.weather.getWeather({
           city: args.city,
+          street: args.street,
           state: args.state,
           zipCode: args.zipCode,
         });

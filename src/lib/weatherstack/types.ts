@@ -14,7 +14,7 @@ export type WeatherResponse = {
 };
 
 export type CurrentWeatherOptions = Partial<
-  Pick<Property, "city" | "state" | "zipCode">
+  Pick<Property, "city" | "state" | "zipCode" | "street">
 >;
 
 export interface IWeatherService {
