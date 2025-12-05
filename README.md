@@ -50,6 +50,14 @@ For development, you can also use:
 npx prisma migrate dev
 ```
 
+### Generate Prisma Client
+
+Generate the Prisma Client after running migrations:
+
+```bash
+npx prisma generate
+```
+
 ### Seed the Database
 
 Populate the database with initial data:
